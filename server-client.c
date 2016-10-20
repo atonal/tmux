@@ -222,6 +222,7 @@ server_client_lost(struct client *c)
 	free((void *)c->cwd);
 
 	evtimer_del(&c->repeat_timer);
+    notify_client("repeat-timer-end", c);
 	evtimer_del(&c->click_timer);
 
 	key_bindings_unref_table(c->keytable);
@@ -796,6 +797,7 @@ retry:
 			tv.tv_usec = (xtimeout % 1000) * 1000L;
 			evtimer_del(&c->repeat_timer);
 			evtimer_add(&c->repeat_timer, &tv);
+            notify_client("repeat-timer-start", c);
 		} else {
 			c->flags &= ~CLIENT_REPEAT;
 			server_client_set_key_table(c, NULL);
@@ -1045,6 +1047,8 @@ server_client_repeat_timer(__unused int fd, __unused short events, void *data)
 		c->flags &= ~CLIENT_REPEAT;
 		server_status_client(c);
 	}
+
+    notify_client("repeat-timer-end", c);
 }
 
 /* Double-click callback. */
